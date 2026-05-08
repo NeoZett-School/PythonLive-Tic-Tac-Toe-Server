@@ -197,6 +197,7 @@ async def main():
                         msg="Wrong version; The server and client were not the same version."
                     )
                     event.conn.close()
+                    event.conn.running = False
                     continue
 
                 character = None
@@ -213,6 +214,7 @@ async def main():
                         msg="Not allowed entrance: All characters have been taken."
                     )
                     event.conn.close()
+                    event.conn.running = False
                     continue
 
                 GameContext.players[character] = event.conn
