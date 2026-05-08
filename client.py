@@ -182,6 +182,10 @@ async def main():
                     row = max(0, min(2, row))
                     col = max(0, min(2, col))
 
+                    if GameContext.character is None:
+                        GameContext.moving_piece = row, col
+                        continue
+
                     if GameContext.board_state[row][col] == GameContext.character:
                         GameContext.moving_piece = row, col
                     else:
@@ -298,7 +302,12 @@ async def main():
             
             if pieces_limited and GameContext.moving_piece:
                 m_row, m_col = GameContext.moving_piece
-                color = (200, 200, 255) if GameContext.character == "o" else (255, 200, 200)
+                if GameContext.character == "o":
+                    color = (200, 200, 255)
+                elif GameContext.character == "x":
+                    color = (255, 200, 200)
+                else:
+                    color = (200, 200, 200)
                 m_center = (first_slot_x + piece_size * m_row, first_slot_y + piece_size * m_col)
                 highlight_rect = Assets.Images.o_piece.get_rect(center=m_center).inflate(20, 20)
                 thickness = 3 + int(math.sin(time.perf_counter() * 10) * 2)
