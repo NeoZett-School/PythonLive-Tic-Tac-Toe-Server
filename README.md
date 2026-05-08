@@ -35,7 +35,7 @@ Key settings include:
 
 ## 🕹️ How to Play
 
-1. **Start the Server:** Run `server.bat` launcher to begin listening for connections.
+1. **Start the Server:** Run the `server.bat` launcher to begin listening for connections.
 
 2. **Connect Clients:** Launch two instances of the client.
 
