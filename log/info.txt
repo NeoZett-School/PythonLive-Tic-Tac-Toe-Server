@@ -1,0 +1,3 @@
+Logging is done for debugging purposes. In the event of an error 
+or during development, live capturing is important to find the 
+root cause or to check whether the program is running correctly.

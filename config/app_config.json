@@ -1,0 +1,16 @@
+{
+    "app_name": "Tic Tac Toe",
+    "app_version": "1.0.0",
+    "window_title": "Tic Tac Toe",
+    "window_icon": "assets/icon.png",
+    "screen_dimensions": {
+        "width": 800,
+        "height": 600
+    },
+    "fill_color": [255, 255, 255],
+    "board_size": 400,
+    "max_pieces": 3,
+    "pieces_limited": true,
+    "win_delay": 5.0,
+    "version": "1.0"
+}

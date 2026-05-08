@@ -1,0 +1,1 @@
+@echo off && call "%~dp0system\launcher.bat" "%~dp0server.py" "%~dp0log\server_log.txt"
