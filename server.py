@@ -288,8 +288,8 @@ async def main():
                             "All clients have been kicked from the session."
                         )
                     elif command.startswith("/set-turn"):
-                        turn = command.removeprefix("/set-turn").strip().lower()
-                        if turn in ("o", "x"):
+                        turn = command.removeprefix("/set-turn").strip().upper()
+                        if turn in ("O", "X"):
                             GameContext.turn = turn
                             Surfaces.subtitle, Surfaces.subtitle_rect = create_text_element(
                                 Assets.Fonts.paragraph1, 
@@ -311,10 +311,10 @@ async def main():
                         )
                     elif command.startswith("/msg"):
                         following = command.removeprefix("/msg").strip()
-                        to = following.split(" ")[0].lower()
+                        to = following.split(" ")[0].upper()
                         text = following.removeprefix(to).strip()
 
-                        if to not in ("o", "x") or not text:
+                        if to not in ("O", "X") or not text:
                             GameContext.messages.append("Invalid command; Usage: /msg <o|x> <message>")
                         else:
                             GameContext.messages.append(f"To {to}: {text}")
