@@ -125,6 +125,20 @@ def draw_messages(screen, font, messages, static_bottom_y, left_x):
         if current_y < 0:
             break
 
+def clear_input_without_placeholder(ui_element):
+    """Manually clears the text entry without triggering the 
+    internal placeholder rendering logic as it does in the pygame-gui source code."""
+    ui_element.text = ""
+    ui_element.edit_position = 0
+    
+    if ui_element.drawable_shape is not None and ui_element.drawable_shape.text_box_layout is not None:
+        # We call the underlying drawable_shape directly with an empty string
+        # This bypasses the 'if len(display_text) > 0 else placeholder' check
+        ui_element.drawable_shape.set_text("")
+        
+        ui_element.drawable_shape.text_box_layout.set_cursor_position(0)
+        ui_element.drawable_shape.apply_active_text_changes()
+
 class UIElements:
     text_input = pygame_gui.elements.UITextEntryLine(
         relative_rect=pygame.Rect((10, HEIGHT-35), (200, 25)), 
@@ -240,12 +254,15 @@ async def main():
             # Handle "Enter" key or finished input
             if event.type == pygame_gui.UI_TEXT_ENTRY_FINISHED:
                 if event.ui_element == UIElements.text_input:
-                    UIElements.text_input.set_text("")
-                    message = f"Char {GameContext.character.upper()}: {event.text}"
-                    GameContext.messages.append(message)
-                    if len(GameContext.messages) > max_messages:
-                        GameContext.messages.pop(0)
-                    await send_message(message)
+                    entered_text = event.text.strip()
+                    
+                    if entered_text:
+                        message = f"{GameContext.character.upper()}: {entered_text}"
+                        GameContext.messages.append(message)
+
+                        clear_input_without_placeholder(UIElements.text_input)
+                        
+                        await send_message(message)
 
         for _ in range(MAX_EVENTS_PER_TICK):
             try:
@@ -327,6 +344,7 @@ async def main():
         while accumulator >= delta_time:
 
             # Update your game state using delta_time
+            manager.update(delta_time)
 
             accumulator -= delta_time
 
