@@ -363,7 +363,7 @@ async def main():
                 )
             
             elif event.type == "update_messages":
-                GameContext.messages = event.data["messages"]
+                GameContext.messages = [message for message in event.data["messages"] if not message.startswith("Invalid command")]
         
         now = time.perf_counter()
         frame_time = min(now - last_time, 0.25)

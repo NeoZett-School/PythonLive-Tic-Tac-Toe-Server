@@ -282,16 +282,22 @@ async def main():
                             "All clients have been kicked from the session."
                         )
                     elif command.startswith("/set-turn"):
-                        GameContext.turn = command.removeprefix("/set-turn").strip()
-                        Surfaces.subtitle, Surfaces.subtitle_rect = create_text_element(
-                            Assets.Fonts.paragraph1, 
-                            f"It is {GameContext.turn}'s turn to place.",
-                            (CENTERX, HEIGHT - 50)
-                        )
-                        await update_board()
-                        GameContext.messages.append(
-                            f"Server has enforced {GameContext.turn}'s turn."
-                        )
+                        turn = command.removeprefix("/set-turn").strip().lower()
+                        if turn in ("o", "x"):
+                            GameContext.turn = turn
+                            Surfaces.subtitle, Surfaces.subtitle_rect = create_text_element(
+                                Assets.Fonts.paragraph1, 
+                                f"It is {GameContext.turn}'s turn to place.",
+                                (CENTERX, HEIGHT - 50)
+                            )
+                            await update_board()
+                            GameContext.messages.append(
+                                f"Server has enforced {GameContext.turn}'s turn."
+                            )
+                        else:
+                            GameContext.messages.append(
+                                "Invalid command: you must specifically state 'o' or 'x' after '/set-turn' in order of setting their turn."
+                            )
                     elif command == "/reset":
                         GameContext.reset()
 
