@@ -283,6 +283,33 @@ async def main():
                         )
                     elif command.startswith("/set-turn"):
                         GameContext.turn = command.removeprefix("/set-turn").strip()
+                        Surfaces.subtitle, Surfaces.subtitle_rect = create_text_element(
+                            Assets.Fonts.paragraph1, 
+                            f"It is {GameContext.turn}'s turn to place.",
+                            (CENTERX, HEIGHT - 50)
+                        )
+                        await update_board()
+                        GameContext.messages.append(
+                            f"Server has enforced {GameContext.turn}'s turn."
+                        )
+                    elif command == "/reset":
+                        GameContext.reset()
+
+                        Surfaces.subtitle, Surfaces.subtitle_rect = create_text_element(
+                            Assets.Fonts.paragraph1, 
+                            f"It is {GameContext.turn}'s turn to place.",
+                            (CENTERX, HEIGHT - 50)
+                        )
+
+                        await server.broadcast(
+                            msg_type="restart",
+                            tick=frame_counter
+                        )
+
+                        await update_board()
+                        GameContext.messages.append(
+                            "Server has reset the board."
+                        )
                     elif entered_text:
                         message = f"Server: {entered_text}"
                         GameContext.messages.append(message)
