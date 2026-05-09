@@ -301,7 +301,7 @@ async def main():
                 if event.ui_element == UIElements.text_input:
                     entered_text = event.text.strip()
                     
-                    command = entered_text.lower()
+                    command = entered_text
                     if command.startswith("/to-server"):
                         message = f"To Server: {command.removeprefix("/to-server").strip()}"
                     elif entered_text:
