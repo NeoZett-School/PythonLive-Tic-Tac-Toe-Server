@@ -224,7 +224,7 @@ class GameContext:
 
     @classmethod
     def skip_prefixes(cls):
-        return ("Invalid command", "Note", f"To {cls.opponent().upper()}")
+        return ("Invalid command", "Note", f"To {cls.opponent().upper()}", "To Server")
 
 screen.fill((fill_color))
 loading_text = Assets.Fonts.paragraph1.render("Connecting...", True, (50, 50, 50))
@@ -301,7 +301,10 @@ async def main():
                 if event.ui_element == UIElements.text_input:
                     entered_text = event.text.strip()
                     
-                    if entered_text:
+                    command = entered_text.lower()
+                    if command.startswith("/to-server"):
+                        message = f"To Server: {command.removeprefix("/to-server").strip()}"
+                    elif entered_text:
                         message = f"{GameContext.character.upper()}: {entered_text}"
 
                     clear_input_without_placeholder(UIElements.text_input)
