@@ -46,8 +46,23 @@ manager = pygame_gui.UIManager((WIDTH, HEIGHT), "theme.json")
 
 CENTERX, CENTERY = (WIDTH // 2, HEIGHT // 2)
 
-pygame.mixer.music.load("assets/sounds/music.mp3")
-pygame.mixer.music.play(-1)
+MUSIC_TRACKS = [
+    "assets/sounds/music/track1.mp3",
+    "assets/sounds/music/track2.mp3",
+    "assets/sounds/music/track3.mp3",
+]
+music_index = 0
+
+MUSIC_END = pygame.USEREVENT + 1
+pygame.mixer.music.set_endevent(MUSIC_END)
+
+def play_next_track():
+    global music_index
+    pygame.mixer.music.load(MUSIC_TRACKS[music_index])
+    pygame.mixer.music.play()
+    music_index = (music_index + 1) % len(MUSIC_TRACKS)
+
+play_next_track()
 
 version = app_config["version"]
 
@@ -267,6 +282,9 @@ async def main():
                     )
 
                     await update_board()
+            
+            elif event.type == MUSIC_END:
+                play_next_track()
             
             manager.process_events(event)
 
