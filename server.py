@@ -278,7 +278,6 @@ async def main():
                             )
                             client.close()
                             client.running = False
-                        server.clients.clear()
                         GameContext.messages.append(
                             "All clients have been kicked from the session."
                         )
@@ -311,7 +310,6 @@ async def main():
                     )
                     event.conn.close()
                     event.conn.running = False
-                    server.clients.remove(event.conn)
                     GameContext.messages.append("Client did not have matching versions.")
                     await update_messages()
                     continue
@@ -331,7 +329,6 @@ async def main():
                     )
                     event.conn.close()
                     event.conn.running = False
-                    server.clients.remove(event.conn)
                     GameContext.messages.append("Client could not be given any character.")
                     await update_messages()
                     continue
