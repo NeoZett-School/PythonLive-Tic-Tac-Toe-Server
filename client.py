@@ -218,6 +218,8 @@ class GameContext:
 
     @classmethod
     def personalize(cls, message):
+        if char is None:
+            return message
         char = cls.character.upper()
         for prefix, replacement in (
             (f"To {char}", "To You"),
