@@ -89,19 +89,45 @@ def create_text_element(font, text, center_pos, color=(50, 50, 50)):
     rect = surface.get_rect(center=center_pos)
     return surface, rect
 
-def draw_messages(screen, font, messages, static_bottom_y, left_x):
+def wrap_text(text, font, max_width):
+    """Wraps text into a list of lines that fit within max_width."""
+    words = text.split(' ')
+    lines = []
+    current_line = []
+
+    for word in words:
+        test_line = ' '.join(current_line + [word])
+        width, _ = font.size(test_line)
+        
+        if width <= max_width:
+            current_line.append(word)
+        else:
+            lines.append(' '.join(current_line))
+            current_line = [word]
+    
+    if current_line:
+        lines.append(' '.join(current_line))
+    
+    return lines
+
+def draw_messages(screen, font, messages, static_bottom_y, left_x, max_width=250):
     current_y = static_bottom_y
+    padding = 5
 
     for message in reversed(messages):
-        text_surface = font.render(message, True, (50, 50, 50))
+        wrapped_lines = wrap_text(message, font, max_width)
         
-        msg_height = text_surface.get_height()
-        current_y -= (msg_height + 5)
+        for line in reversed(wrapped_lines):
+            text_surface = font.render(line, True, (50, 50, 50))
+            msg_height = text_surface.get_height()
+            
+            current_y -= (msg_height + padding)
+            screen.blit(text_surface, (left_x, current_y))
 
-        screen.blit(text_surface, (left_x, current_y))
-
-        if current_y < 0:
-            break
+            if current_y < 0:
+                return 
+        
+        current_y -= 5
 
 def clear_input_without_placeholder(ui_element):
     """Manually clears the text entry without triggering the 
@@ -161,7 +187,9 @@ class GameContext:
         "x": 0
     }
 
-    messages = []
+    messages = [
+        "Server has started listening."
+    ]
 
     @classmethod
     def reset(cls):
@@ -263,6 +291,8 @@ async def main():
                     )
                     event.conn.close()
                     event.conn.running = False
+                    GameContext.messages.append("Client did not have matching versions.")
+                    await update_messages()
                     continue
 
                 character = None
@@ -280,6 +310,8 @@ async def main():
                     )
                     event.conn.close()
                     event.conn.running = False
+                    GameContext.messages.append("Client could not be given any character.")
+                    await update_messages()
                     continue
 
                 GameContext.players[character] = event.conn
@@ -289,6 +321,9 @@ async def main():
                     character=character
                 )
 
+                GameContext.messages.append(f"Character {character.upper()} was given.")
+                await update_messages()
+
                 Surfaces.subtitle, Surfaces.subtitle_rect = create_text_element(
                     Assets.Fonts.paragraph1, 
                     f"It is {GameContext.turn}'s turn to place.",
@@ -297,11 +332,17 @@ async def main():
                 
                 await update_board()
                 await update_messages()
+            
+            elif event.type == "connect":
+                GameContext.messages.append("A new client has connected.")
+                await update_messages()
 
             elif event.type == "disconnect":
                 for char in ("o", "x"):
                     if event.conn == GameContext.players[char]:
                         GameContext.players[char] = None
+                        GameContext.messages.append(f"{char.upper()} has disconnected.")
+                        await update_messages()
                 
                 if len(server.clients) == 1:
                     Surfaces.subtitle, Surfaces.subtitle_rect = create_text_element(
