@@ -1,3 +1,4 @@
 pygame-ce
+pygame-gui
 pywin32
 psutil

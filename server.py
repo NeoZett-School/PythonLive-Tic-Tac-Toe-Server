@@ -13,6 +13,7 @@ warnings.simplefilter("always")
 
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
+import pygame_gui
 
 MAX_EVENTS_PER_TICK = 50
 
@@ -41,6 +42,7 @@ pygame.display.set_caption(server_config['window_title'])
 pygame.display.set_icon(pygame.image.load(app_config['window_icon']))
 WIDTH, HEIGHT = app_config['screen_dimensions'].values()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+manager = pygame_gui.UIManager((WIDTH, HEIGHT), "theme.json")
 
 CENTERX, CENTERY = (WIDTH // 2, HEIGHT // 2)
 
@@ -50,6 +52,7 @@ fill_color = app_config["fill_color"]
 board_size = app_config["board_size"]
 max_pieces = app_config["max_pieces"]
 pieces_limited = app_config["pieces_limited"]
+max_messages = app_config["max_messages"]
 win_delay = app_config["win_delay"]
 piece_size = board_size // 3
 half_piece_size = piece_size // 2
@@ -60,7 +63,7 @@ class Assets:
     class Fonts:
         header1 = pygame.font.SysFont("Georgia", 24)
         paragraph1 = pygame.font.SysFont("Georgia", 18)
-        paragraph2 = pygame.font.SysFont("Verdana", 10)
+        paragraph2 = pygame.font.SysFont("Segoe UI", 14)
     class Images:
         board = pygame.transform.scale(pygame.image.load("assets/images/board.png"), (board_size, board_size))
         o_piece = pygame.transform.smoothscale(pygame.image.load("assets/images/o.png"), (piece_image_size, piece_image_size))
@@ -85,6 +88,27 @@ def create_text_element(font, text, center_pos, color=(50, 50, 50)):
     surface = font.render(text, True, color)
     rect = surface.get_rect(center=center_pos)
     return surface, rect
+
+def draw_messages(screen, font, messages, static_bottom_y, left_x):
+    current_y = static_bottom_y
+
+    for message in reversed(messages):
+        text_surface = font.render(message, True, (50, 50, 50))
+        
+        msg_height = text_surface.get_height()
+        current_y -= (msg_height + 5)
+
+        screen.blit(text_surface, (left_x, current_y))
+
+        if current_y < 0:
+            break
+
+class UIElements:
+    text_input = pygame_gui.elements.UITextEntryLine(
+        relative_rect=pygame.Rect((10, HEIGHT-35), (200, 25)), 
+        manager=manager,
+        placeholder_text="Send a message"
+    )
 
 class Surfaces:
     title, title_rect = create_text_element(
@@ -123,6 +147,8 @@ class GameContext:
         "x": 0
     }
 
+    messages = []
+
     @classmethod
     def reset(cls):
         cls.board_state = [[None, None, None], [None, None, None], [None, None, None]]
@@ -146,6 +172,13 @@ async def main():
             board_state=GameContext.board_state, 
             piece_counts=GameContext.piece_counts,
             turn=GameContext.turn
+        )
+    
+    async def send_message(message):
+        await server.broadcast(
+            msg_type="new_message",
+            tick=frame_counter,
+            message=message
         )
 
     running = True
@@ -179,6 +212,18 @@ async def main():
                     )
 
                     await update_board()
+            
+            manager.process_events(event)
+
+            # Handle "Enter" key or finished input
+            if event.type == pygame_gui.UI_TEXT_ENTRY_FINISHED:
+                if event.ui_element == UIElements.text_input:
+                    UIElements.text_input.set_text("")
+                    message = f"Server: {event.text}"
+                    GameContext.messages.append(message)
+                    if len(GameContext.messages) > max_messages:
+                        GameContext.messages.pop(0)
+                    await send_message(message)
         
         for _ in range(MAX_EVENTS_PER_TICK):
             try:
@@ -315,6 +360,11 @@ async def main():
 
                 await update_board()
                 Assets.Sounds.placing.play()
+            
+            elif event.type == "new_message":
+                GameContext.messages.append(event.data["message"])
+                if len(GameContext.messages) > max_messages:
+                    GameContext.messages.pop(0)
 
         now = time.perf_counter()
         frame_time = min(now - last_time, 0.25)
@@ -325,6 +375,7 @@ async def main():
         while accumulator >= delta_time:
 
             # Update your game state using dt
+            manager.update(delta_time)
 
             accumulator -= delta_time
 
@@ -335,6 +386,9 @@ async def main():
         # Render the game state
         screen.blit(Surfaces.title, Surfaces.title_rect)
         screen.blit(Surfaces.subtitle, Surfaces.subtitle_rect)
+
+        manager.draw_ui(screen)
+        draw_messages(screen, Assets.Fonts.paragraph2, GameContext.messages, HEIGHT - 45, 10)
 
         if GameContext.winner is None or now - GameContext.win_time < win_delay:
             screen.blit(Assets.Images.board, board_rect)
