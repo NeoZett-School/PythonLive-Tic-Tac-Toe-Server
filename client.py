@@ -68,6 +68,10 @@ manager = pygame_gui.UIManager((WIDTH, HEIGHT), "theme.json")
 
 CENTERX, CENTERY = (WIDTH // 2, HEIGHT // 2)
 
+if sounds_active:
+    pygame.mixer.music.load("assets/sounds/music.mp3")
+    pygame.mixer.music.play(-1)
+
 version = app_config["version"]
 
 fill_color = app_config["fill_color"]
