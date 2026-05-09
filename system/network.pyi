@@ -14,6 +14,7 @@ import asyncio
 from typing import (
     Any, Self, List, Dict, Optional, AsyncGenerator
 )
+from websockets.server import ServerConnection
 
 class Event:
     """Represents an event that occurs in the server or client."""
@@ -44,10 +45,23 @@ class Connection:
     async def send(self: Self, msg_type: str, tick: int, **data: Any) -> None: ...
     async def close(self: Self) -> None: ...
 
+class WebSocketConnection:
+    """A websocket connection that retains a connection over a websocket."""
+
+    ws: ServerConnection
+    queue: asyncio.Queue
+    running: bool
+
+    def __init__(self: Self, ws: ServerConnection, queue: asyncio.Queue): ...
+    async def run(self: Self): ...
+    async def send(self: Self, msg_type: str, tick: int, **data: Any): ...
+    async def close(self: Self): ...
+
 class Server:
     """Class representing the TCP server that can handle multiple client connections and broadcast messages to them."""
 
     server: Optional[asyncio.AbstractServer]
+    ws_server: Optional[ServerConnection]
     event_queue: asyncio.Queue[Event]
     clients: List["Connection"]
 
@@ -60,8 +74,6 @@ class Server:
 class Client:
     """Class representing a TCP client that can connect to the server, send messages, and receive events from the server."""
 
-    reader: Optional[asyncio.StreamReader]
-    writer: Optional[asyncio.StreamWriter]
     conn: Optional[Connection]
     event_queue: asyncio.Queue[Event]
 

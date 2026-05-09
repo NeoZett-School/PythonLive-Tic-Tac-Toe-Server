@@ -15,22 +15,34 @@
 import asyncio
 import struct
 import msgpack
+import websockets
+from websockets.exceptions import ConnectionClosed
 
 class Event:
     __slots__ = ("type", "tick", "data", "conn")
-    
+
     def __init__(self, type, tick, data, conn=None):
         self.type = type
         self.tick = tick
         self.data = data
         self.conn = conn
 
+
 def encode_message(msg_type, tick, **data):
     payload = {"type": msg_type, "tick": tick, "data": data}
     raw = msgpack.packb(payload, use_bin_type=True)
     return struct.pack("!I", len(raw)) + raw
 
+
+def _pack_message(msg_type, tick, **data):
+    """Return the raw msgpack bytes without the TCP length-prefix header.
+    Used for WebSocket transport, which frames messages for us."""
+    payload = {"type": msg_type, "tick": tick, "data": data}
+    return msgpack.packb(payload, use_bin_type=True)
+
+
 async def read_message(reader):
+    """Read one length-prefixed msgpack message from a TCP StreamReader."""
     try:
         header = await reader.readexactly(4)
     except asyncio.IncompleteReadError:
@@ -72,9 +84,9 @@ class Connection:
             pass
         finally:
             await self.queue.put(Event(
-                type="disconnect", 
-                tick=0, 
-                data={}, 
+                type="disconnect",
+                tick=0,
+                data={},
                 conn=self
             ))
             await self.close()
@@ -97,35 +109,111 @@ class Connection:
         except Exception:
             pass
 
+class WebSocketConnection:
+    __slots__ = ("ws", "queue", "running")
+
+    def __init__(self, ws, queue):
+        self.ws = ws
+        self.queue = queue
+        self.running = True
+
+    async def run(self):
+        try:
+            async for raw in self.ws:
+                if not self.running:
+                    break
+
+                if isinstance(raw, str):
+                    raw = raw.encode()
+
+                msg = msgpack.unpackb(raw, raw=False)
+                await self.queue.put(Event(
+                    type=msg["type"],
+                    tick=msg["tick"],
+                    data=msg["data"],
+                    conn=self
+                ))
+
+        except ConnectionClosed:
+            pass
+        except Exception:
+            pass
+        finally:
+            await self.queue.put(Event(
+                type="disconnect",
+                tick=0,
+                data={},
+                conn=self
+            ))
+            await self.close()
+
+    async def send(self, msg_type, tick, **data):
+        if not self.running:
+            return
+
+        try:
+            raw = _pack_message(msg_type, tick, **data)
+            await self.ws.send(raw)
+        except ConnectionClosed:
+            self.running = False
+
+    async def close(self):
+        self.running = False
+        try:
+            await self.ws.close()
+        except Exception:
+            pass
+
 class Server:
-    __slots__ = ("server", "event_queue", "clients")
+    __slots__ = ("server", "ws_server", "event_queue", "clients")
 
     def __init__(self):
         self.server = None
+        self.ws_server = None
         self.event_queue = asyncio.Queue()
         self.clients = []
 
-    async def start(self, host, port, *args, **kwargs):
+    async def start(self, host, port, ws_port=None, **kwargs):
         self.server = await asyncio.start_server(
-            self._handle_client, 
-            host=host, 
+            self._handle_tcp_client,
+            host=host,
             port=port,
-            *args, **kwargs
+            **kwargs
         )
         await self.server.start_serving()
 
-    async def _handle_client(self, reader, writer):
+        if ws_port is not None:
+            self.ws_server = await websockets.serve(
+                self._handle_ws_client,
+                host,
+                ws_port,
+            )
+
+    async def _handle_tcp_client(self, reader, writer):
         conn = Connection(reader, writer, self.event_queue)
         self.clients.append(conn)
 
         await self.event_queue.put(Event(
-            type="connect", 
-            tick=0, 
-            data={}, 
+            type="connect",
+            tick=0,
+            data={"transport": "tcp"},
             conn=conn
         ))
 
         asyncio.create_task(conn.run())
+
+    async def _handle_ws_client(self, ws):
+        conn = WebSocketConnection(ws, self.event_queue)
+        self.clients.append(conn)
+
+        await self.event_queue.put(Event(
+            type="connect",
+            tick=0,
+            data={"transport": "websocket"},
+            conn=conn
+        ))
+
+        await conn.run()
 
     async def broadcast(self, msg_type, tick, **data):
         await asyncio.gather(
@@ -140,23 +228,38 @@ class Server:
             self.server.close()
             await self.server.wait_closed()
 
-class Client:
-    __slots__ = ("reader", "writer", "conn", "event_queue")
+        if self.ws_server:
+            self.ws_server.close()
+            await self.ws_server.wait_closed()
 
-    def __init__(self):
-        self.reader = None
-        self.writer = None
+class Client:
+    __slots__ = ("conn", "event_queue", "_ws_port", "_ws_scheme")
+
+    def __init__(self, ws_port=None, ws_scheme="ws"):
         self.conn = None
         self.event_queue = asyncio.Queue()
+        self._ws_port = ws_port
+        self._ws_scheme = ws_scheme
 
-    async def connect(self, host, port, *args, **kwargs):
-        self.reader, self.writer = await asyncio.open_connection(
-            host=host, 
-            port=port,
-            *args, **kwargs
-        )
-        self.conn = Connection(self.reader, self.writer, self.event_queue)
+    async def connect(self, host, port, **kwargs):
+        try:
+            reader, writer = await asyncio.open_connection(host, port, **kwargs)
+            self.conn = Connection(reader, writer, self.event_queue)
+            asyncio.create_task(self.conn.run())
+            return
+        except OSError as tcp_err:
+            if self._ws_port is None:
+                raise
 
+        uri = f"{self._ws_scheme}://{host}:{self._ws_port}"
+        try:
+            ws = await websockets.connect(uri)
+        except Exception as ws_err:
+            raise ConnectionError(
+                f"Both TCP ({host}:{port}) and WebSocket ({uri}) failed."
+            ) from ws_err
+
+        self.conn = WebSocketConnection(ws, self.event_queue)
         asyncio.create_task(self.conn.run())
 
     async def send(self, msg_type, tick, **data):
