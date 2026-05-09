@@ -297,7 +297,7 @@ async def main():
 
                         Surfaces.subtitle, Surfaces.subtitle_rect = create_text_element(
                             Assets.Fonts.paragraph1, 
-                            f"It is {GameContext.turn}'s turn to place.",
+                            f"It is {GameContext.turn}'s turn to place." if len(server.clients) > 0 else "Waiting for players...",
                             (CENTERX, HEIGHT - 50)
                         )
 
