@@ -123,7 +123,7 @@ def draw_messages(screen, font, messages, static_bottom_y, left_x, max_width=200
         if message.startswith("Invalid command"):
             color = (255, 50, 50)
         elif message.startswith("Note"):
-            color = (10, 10, 90)
+            color = (100, 75, 150)
         
         for line in reversed(wrapped_lines):
             text_surface = font.render(line, True, color)
