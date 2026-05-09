@@ -313,6 +313,9 @@ async def main():
                     elif entered_text:
                         message = f"Server: {entered_text}"
                         GameContext.messages.append(message)
+                    
+                    if len(GameContext.messages) > max_messages:
+                        GameContext.messages.pop(0)
 
                     clear_input_without_placeholder(UIElements.text_input)
                     manager.set_focus_set(set())
