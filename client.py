@@ -260,6 +260,7 @@ async def main():
                         message = f"{GameContext.character.upper()}: {entered_text}"
 
                     clear_input_without_placeholder(UIElements.text_input)
+                    manager.set_focus_set(set())
                     
                     await send_message(message)
 

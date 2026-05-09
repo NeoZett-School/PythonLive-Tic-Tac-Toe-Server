@@ -241,6 +241,7 @@ async def main():
                         GameContext.messages.append(message)
 
                     clear_input_without_placeholder(UIElements.text_input)
+                    manager.set_focus_set(set())
                     
                     await update_messages()
         
