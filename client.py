@@ -35,7 +35,8 @@ LOG_FILE = r'log\client_log.txt'
 CONFIG_FILE = r'config\client_config.json'
 APP_CONFIG = r'config\app_config.json'
 
-app_config = json.load(open(APP_CONFIG, "r"))
+with open(APP_CONFIG, "r") as f:
+    app_config = json.load(f)
 
 APP_ID = fr'PythonLive.{app_config["app_name"]}.Client.{app_config["app_version"]}'
 
@@ -59,6 +60,8 @@ client_config = json.load(open(CONFIG_FILE, "r"))
 is_device_server = is_local_address(client_config["host"])
 
 sounds_active = not (has_another_client or is_device_server)
+
+logging.info(has_another_client, is_device_server)
 
 pygame.display.set_caption(app_config['window_title'])
 pygame.display.set_icon(pygame.image.load(app_config['window_icon']))

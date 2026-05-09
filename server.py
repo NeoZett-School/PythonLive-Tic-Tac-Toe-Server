@@ -21,7 +21,8 @@ LOG_FILE = r'log\server_log.txt'
 CONFIG_FILE = r'config\server_config.json'
 APP_CONFIG = r'config\app_config.json'
 
-app_config = json.load(open(APP_CONFIG, "r"))
+with open(APP_CONFIG, "r") as f:
+    app_config = json.load(f)
 
 APP_ID = fr'PythonLive.{app_config["app_name"]}.Server.{app_config["app_version"]}'
 
@@ -36,7 +37,8 @@ set_appid(APP_ID)
 
 pygame.init()
 
-server_config = json.load(open(CONFIG_FILE, "r"))
+with open(CONFIG_FILE, "r") as f:
+    server_config = json.load(f)
 
 pygame.display.set_caption(server_config['window_title'])
 pygame.display.set_icon(pygame.image.load(app_config['window_icon']))
