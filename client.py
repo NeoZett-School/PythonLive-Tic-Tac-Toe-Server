@@ -55,7 +55,8 @@ has_another_client = last_error == winerror.ERROR_ALREADY_EXISTS
 
 pygame.init()
 
-client_config = json.load(open(CONFIG_FILE, "r"))
+with open(CONFIG_FILE, "r") as f:
+    client_config = json.load(f)
 
 is_device_server = is_local_address(client_config["host"])
 
