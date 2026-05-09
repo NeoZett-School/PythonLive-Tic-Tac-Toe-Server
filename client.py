@@ -311,7 +311,7 @@ async def main():
                     
                     command = entered_text
                     if command.startswith("/to-server"):
-                        message = f"From {GameContext.character} To Server: {command.removeprefix("/to-server").strip()}"
+                        message = f"From {GameContext.character.upper()} To Server: {command.removeprefix("/to-server").strip()}"
                     elif entered_text:
                         message = f"{GameContext.character.upper()}: {entered_text}"
 
