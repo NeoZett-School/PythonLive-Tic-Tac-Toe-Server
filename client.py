@@ -262,8 +262,14 @@ def quit():
     pygame.event.post(pygame.event.Event(pygame.QUIT))
 
 async def main():
-    client = network.Client()
-    await client.connect(client_config["host"], client_config["port"], family=socket.AF_INET)
+    client = network.Client(
+        ws_port=client_config["ws_port"]
+    )
+    await client.connect(
+        host=client_config["host"], 
+        port=client_config["port"], 
+        family=socket.AF_INET
+    )
 
     await client.send(
         msg_type="sync", 
