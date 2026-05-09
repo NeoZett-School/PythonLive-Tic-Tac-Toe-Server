@@ -192,7 +192,7 @@ def draw_messages(screen, font, messages, static_bottom_y, left_x, max_width=150
         if current_y < 0:
             return
 
-        halo_inflate = 3
+        halo_inflate = 2
         halo_surf = pygame.Surface((bubble_w + halo_inflate * 2, bubble_h + halo_inflate * 2), pygame.SRCALPHA)
         halo_color = (*color_bottom[:3], 40)
         pygame.draw.rect(halo_surf, halo_color,
