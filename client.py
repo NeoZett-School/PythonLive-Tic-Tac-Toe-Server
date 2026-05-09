@@ -219,8 +219,7 @@ class GameContext:
     @classmethod
     def personalize(cls, message):
         return (message
-            .replace(f"{cls.character} ", "You ")
-            .replace(f" {cls.character}", " You"))
+            .replace(f"To {cls.character}:", "To You:"))
 
     @classmethod
     def skip_prefixes(cls):
