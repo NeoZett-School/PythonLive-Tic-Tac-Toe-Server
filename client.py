@@ -218,14 +218,19 @@ class GameContext:
 
     @classmethod
     def personalize(cls, message):
-        prefix = f"To {cls.character}:"
-        if message.startswith(prefix):
-            message = "To You:" + message[len(prefix):]
+        char = cls.character.upper()
+        for prefix, replacement in (
+            (f"To {char}", "To You"),
+            (f"From {char}", "From You"),
+        ):
+            if message.startswith(prefix):
+                return replacement + message[len(prefix):]
         return message
 
     @classmethod
     def skip_prefixes(cls):
-        return ("Invalid command", "Note", f"To {cls.opponent().upper()}", "To Server")
+        opponent = cls.opponent().upper()
+        return ("Invalid command", "Note", f"To {opponent}", f"From {opponent} To Server")
 
 screen.fill((fill_color))
 loading_text = Assets.Fonts.paragraph1.render("Connecting...", True, (50, 50, 50))
@@ -304,7 +309,7 @@ async def main():
                     
                     command = entered_text
                     if command.startswith("/to-server"):
-                        message = f"To Server: {command.removeprefix("/to-server").strip()}"
+                        message = f"From {GameContext.character} To Server: {command.removeprefix("/to-server").strip()}"
                     elif entered_text:
                         message = f"{GameContext.character.upper()}: {entered_text}"
 
