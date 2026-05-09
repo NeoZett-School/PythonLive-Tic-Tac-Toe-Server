@@ -218,8 +218,10 @@ class GameContext:
 
     @classmethod
     def personalize(cls, message):
-        return (message
-            .replace(f"To {cls.character}:", "To You:"))
+        prefix = f"To {cls.character}:"
+        if message.startswith(prefix):
+            message = "To You:" + message[len(prefix):]
+        return message
 
     @classmethod
     def skip_prefixes(cls):
