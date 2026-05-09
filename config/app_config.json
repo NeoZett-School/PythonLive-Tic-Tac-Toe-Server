@@ -11,7 +11,7 @@
     "board_size": 400,
     "max_pieces": 3,
     "pieces_limited": true,
-    "max_messages": 15,
+    "max_messages": 7,
     "win_delay": 5.0,
     "version": "1.0"
 }
