@@ -136,6 +136,8 @@ def draw_messages(screen, font, messages, static_bottom_y, left_x, max_width=250
     current_y = static_bottom_y
     padding = 5
 
+    linesize = 3 # font.get_linesize()
+
     for message in reversed(messages):
         wrapped_lines = wrap_text(message, font, max_width)
         
@@ -149,7 +151,7 @@ def draw_messages(screen, font, messages, static_bottom_y, left_x, max_width=250
             if current_y < 0:
                 return 
         
-        current_y -= 5
+        current_y -= linesize
 
 def clear_input_without_placeholder(ui_element):
     """Manually clears the text entry without triggering the 

@@ -114,6 +114,8 @@ def draw_messages(screen, font, messages, static_bottom_y, left_x, max_width=250
     current_y = static_bottom_y
     padding = 5
 
+    linesize = 3 # font.get_linesize()
+
     for message in reversed(messages):
         wrapped_lines = wrap_text(message, font, max_width)
         
@@ -127,7 +129,7 @@ def draw_messages(screen, font, messages, static_bottom_y, left_x, max_width=250
             if current_y < 0:
                 return 
         
-        current_y -= 5
+        current_y -= linesize
 
 def clear_input_without_placeholder(ui_element):
     """Manually clears the text entry without triggering the 
@@ -262,8 +264,26 @@ async def main():
                 if event.ui_element == UIElements.text_input:
                     entered_text = event.text.strip()
                     
-                    if entered_text.lower() == "/clear":
-                        GameContext.messages = []
+                    command = entered_text.lower()
+                    if command == "/clear":
+                        GameContext.messages = [
+                            "Server has cleared all messages."
+                        ]
+                    elif command == "/kick":
+                        for client in server.clients:
+                            await client.send(
+                                msg_type="disallowed",
+                                tick=frame_counter,
+                                msg="You were kicked by the server."
+                            )
+                            client.close()
+                            client.running = False
+                        server.clients.clear()
+                        GameContext.messages.append(
+                            "All clients have been kicked from the session."
+                        )
+                    elif command.startswith("/set-turn"):
+                        GameContext.turn = command.removeprefix("/set-turn").strip()
                     elif entered_text:
                         message = f"Server: {entered_text}"
                         GameContext.messages.append(message)
@@ -338,11 +358,14 @@ async def main():
                 await update_messages()
 
             elif event.type == "disconnect":
+                GameContext.messages.append(f"A client disconnected.")
+
                 for char in ("o", "x"):
                     if event.conn == GameContext.players[char]:
                         GameContext.players[char] = None
-                        GameContext.messages.append(f"{char.upper()} has disconnected.")
-                        await update_messages()
+                        GameContext.messages.append(f"Character {char.upper()} has been reset.")
+                
+                await update_messages()
                 
                 if len(server.clients) == 1:
                     Surfaces.subtitle, Surfaces.subtitle_rect = create_text_element(
