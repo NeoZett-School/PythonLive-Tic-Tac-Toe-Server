@@ -81,8 +81,9 @@ class Assets:
     class Fonts:
         header1 = pygame.font.SysFont("Georgia", 24)
         paragraph1 = pygame.font.SysFont("Georgia", 18)
-        paragraph2 = pygame.font.SysFont("Segoe UI", 14)
+        paragraph2 = pygame.font.SysFont("Tahoma", 14)
     class Images:
+        background = pygame.transform.scale(pygame.image.load("assets/images/background.png"), (WIDTH, HEIGHT))
         board = pygame.transform.scale(pygame.image.load("assets/images/board.png"), (board_size, board_size))
         o_piece = pygame.transform.smoothscale(pygame.image.load("assets/images/o.png"), (piece_image_size, piece_image_size))
         x_piece = pygame.transform.smoothscale(pygame.image.load("assets/images/x.png"), (piece_image_size, piece_image_size))
@@ -131,32 +132,52 @@ def wrap_text(text, font, max_width):
 def draw_messages(screen, font, messages, static_bottom_y, left_x, max_width=200):
     current_y = static_bottom_y
     padding = 5
+    linesize = 3
 
-    linesize = 3 # font.get_linesize()
+    total_height = 0
+    all_wrapped = []
+    for message in reversed(messages):
+        wrapped_lines = wrap_text(message, font, max_width)
+        all_wrapped.append(wrapped_lines)
+        for line in wrapped_lines:
+            _, h = font.size(line)
+            total_height += h + padding
+        total_height += linesize
+
+    panel_padding_x = 8
+    panel_padding_y = 6
+    panel_width = max_width + panel_padding_x * 2
+    panel_height = min(total_height, static_bottom_y) + panel_padding_y * 2
+
+    panel_x = left_x - panel_padding_x
+    panel_y = static_bottom_y - panel_height + panel_padding_y
+
+    panel = pygame.Surface((panel_width, panel_height), pygame.SRCALPHA)
+    panel.fill((20, 20, 30, 140))
+
+    pygame.draw.rect(panel, (255, 255, 255, 40), panel.get_rect(), 1, border_radius=6)
+
+    screen.blit(panel, (panel_x, panel_y))
 
     for message in reversed(messages):
         wrapped_lines = wrap_text(message, font, max_width)
 
-        color = (50, 50, 50) 
+        color = (220, 220, 220)
         if message.startswith("Invalid command"):
-            color = (255, 50, 50)
-        elif message.startswith("Note"):
-            color = (100, 75, 150)
-        elif message.startswith("To"):
-            color = (100, 75, 150)
+            color = (255, 100, 100)
+        elif message.startswith("Note") or message.startswith("To"):
+            color = (180, 140, 255)
         elif message.startswith("From"):
-            color = (50, 150, 50)
-        
+            color = (100, 220, 130)
+
         for line in reversed(wrapped_lines):
             text_surface = font.render(line, True, color)
             msg_height = text_surface.get_height()
-            
             current_y -= (msg_height + padding)
             screen.blit(text_surface, (left_x, current_y))
-
             if current_y < 0:
-                return 
-        
+                return
+
         current_y -= linesize
 
 def clear_input_without_placeholder(ui_element):
@@ -554,6 +575,8 @@ async def main():
         alpha = accumulator / delta_time
 
         # Render the game state
+        screen.blit(Assets.Images.background, (0, 0))
+        
         screen.blit(Surfaces.title, Surfaces.title_rect)
         screen.blit(Surfaces.subtitle, Surfaces.subtitle_rect)
 
