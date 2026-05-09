@@ -290,7 +290,7 @@ async def main():
                     elif command.startswith("/set-turn"):
                         turn = command.removeprefix("/set-turn").strip().upper()
                         if turn in ("O", "X"):
-                            GameContext.turn = turn
+                            GameContext.turn = turn.lower()
                             Surfaces.subtitle, Surfaces.subtitle_rect = create_text_element(
                                 Assets.Fonts.paragraph1, 
                                 f"It is {GameContext.turn}'s turn to place.",
