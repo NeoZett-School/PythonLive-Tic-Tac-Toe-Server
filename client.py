@@ -302,8 +302,7 @@ async def main():
                 break
 
             if event.type == "disconnect":
-                if not GameContext.disallowed:
-                    running = False
+                running = False
 
             # Handle network events
             elif event.type == "sync":
