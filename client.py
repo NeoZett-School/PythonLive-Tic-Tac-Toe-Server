@@ -62,8 +62,6 @@ is_device_server = is_local_address(client_config["host"])
 
 sounds_active = not (has_another_client or is_device_server)
 
-logging.info(has_another_client, is_device_server)
-
 pygame.display.set_caption(app_config['window_title'])
 pygame.display.set_icon(pygame.image.load(app_config['window_icon']))
 WIDTH, HEIGHT = app_config['screen_dimensions'].values()
