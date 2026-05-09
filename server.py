@@ -241,7 +241,7 @@ async def main():
             
             # Handle pygame events
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_SPACE and not UIElements.text_input.is_focused and GameContext.winner is not None:
                     GameContext.reset()
 
                     Surfaces.subtitle, Surfaces.subtitle_rect = create_text_element(
