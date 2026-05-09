@@ -104,7 +104,7 @@ class Assets:
     class Fonts:
         header1 = pygame.font.SysFont("Georgia", 24)
         paragraph1 = pygame.font.SysFont("Georgia", 18)
-        paragraph2 = pygame.font.SysFont("Tahoma", 14)
+        paragraph2 = pygame.font.Font("assets/fonts/FiraCode-Regular.ttf", 14)
     class Images:
         background = pygame.transform.scale(pygame.image.load("assets/images/background.png"), (WIDTH, HEIGHT))
         board = pygame.transform.scale(pygame.image.load("assets/images/board.png"), (board_size, board_size))
@@ -152,56 +152,82 @@ def wrap_text(text, font, max_width):
     
     return lines
 
-def draw_messages(screen, font, messages, static_bottom_y, left_x, max_width=200):
+def draw_messages(screen, font, messages, static_bottom_y, left_x, max_width=150):
+    padding_x = 10
+    padding_y = 6
+    bubble_gap = 5
+    corner_radius = 10
     current_y = static_bottom_y
-    padding = 5
-    linesize = 3
-
-    total_height = 0
-    all_wrapped = []
-    for message in reversed(messages):
-        wrapped_lines = wrap_text(message, font, max_width)
-        all_wrapped.append(wrapped_lines)
-        for line in wrapped_lines:
-            _, h = font.size(line)
-            total_height += h + padding
-        total_height += linesize
-
-    panel_padding_x = 8
-    panel_padding_y = 6
-    panel_width = max_width + panel_padding_x * 2
-    panel_height = min(total_height, static_bottom_y) + panel_padding_y * 2
-
-    panel_x = left_x - panel_padding_x
-    panel_y = static_bottom_y - panel_height + panel_padding_y
-
-    panel = pygame.Surface((panel_width, panel_height), pygame.SRCALPHA)
-    panel.fill((20, 20, 30, 140))
-
-    pygame.draw.rect(panel, (255, 255, 255, 40), panel.get_rect(), 1, border_radius=6)
-
-    screen.blit(panel, (panel_x, panel_y))
 
     for message in reversed(messages):
         wrapped_lines = wrap_text(message, font, max_width)
 
-        color = (220, 220, 220)
         if message.startswith("Invalid command"):
-            color = (255, 100, 100)
-        elif message.startswith("Note") or message.startswith("To"):
-            color = (180, 140, 255)
+            color_top = (180, 60, 60, 200)
+            color_bottom = (120, 30, 30, 180)
+            text_color = (255, 200, 200)
+        elif message.startswith("To"):
+            color_top = (80, 60, 160, 200)
+            color_bottom = (50, 35, 120, 180)
+            text_color = (200, 185, 255)
         elif message.startswith("From"):
-            color = (100, 220, 130)
+            color_top = (40, 130, 80, 200)
+            color_bottom = (25, 85, 50, 180)
+            text_color = (185, 255, 210)
+        elif message.startswith("Note"):
+            color_top = (80, 60, 160, 200)
+            color_bottom = (50, 35, 120, 180)
+            text_color = (200, 185, 255)
+        else:
+            color_top = (110, 80, 120, 190)
+            color_bottom = (55, 60, 110, 170)
+            text_color = (225, 220, 235)
 
-        for line in reversed(wrapped_lines):
-            text_surface = font.render(line, True, color)
-            msg_height = text_surface.get_height()
-            current_y -= (msg_height + padding)
-            screen.blit(text_surface, (left_x, current_y))
-            if current_y < 0:
-                return
+        line_surfaces = [font.render(line, True, text_color) for line in wrapped_lines]
+        bubble_w = max(s.get_width() for s in line_surfaces) + padding_x * 2
+        bubble_h = sum(s.get_height() for s in line_surfaces) + padding_y * 2 + (len(line_surfaces) - 1) * 2
 
-        current_y -= linesize
+        current_y -= bubble_h + bubble_gap
+
+        if current_y < 0:
+            return
+
+        halo_inflate = 3
+        halo_surf = pygame.Surface((bubble_w + halo_inflate * 2, bubble_h + halo_inflate * 2), pygame.SRCALPHA)
+        halo_color = (*color_bottom[:3], 40)
+        pygame.draw.rect(halo_surf, halo_color,
+                         halo_surf.get_rect(), border_radius=corner_radius + halo_inflate)
+        screen.blit(halo_surf, (left_x - halo_inflate, current_y - halo_inflate))
+
+        bubble_surf = pygame.Surface((bubble_w, bubble_h), pygame.SRCALPHA)
+        for i in range(bubble_h):
+            t = i / max(bubble_h - 1, 1)
+            r = int(color_top[0] + (color_bottom[0] - color_top[0]) * t)
+            g = int(color_top[1] + (color_bottom[1] - color_top[1]) * t)
+            b = int(color_top[2] + (color_bottom[2] - color_top[2]) * t)
+            a = int(color_top[3] + (color_bottom[3] - color_top[3]) * t)
+            pygame.draw.line(bubble_surf, (r, g, b, a), (0, i), (bubble_w, i))
+
+        mask_surf = pygame.Surface((bubble_w, bubble_h), pygame.SRCALPHA)
+        pygame.draw.rect(mask_surf, (255, 255, 255, 255),
+                         mask_surf.get_rect(), border_radius=corner_radius)
+        bubble_surf.blit(mask_surf, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+
+        highlight_surf = pygame.Surface((bubble_w, bubble_h), pygame.SRCALPHA)
+        pygame.draw.rect(highlight_surf, (255, 255, 255, 30),
+                         pygame.Rect(0, 0, bubble_w, bubble_h // 3),
+                         border_radius=corner_radius)
+        bubble_surf.blit(highlight_surf, (0, 0))
+
+        pygame.draw.rect(bubble_surf, (*color_top[:3], 45),
+                         bubble_surf.get_rect(), 1, border_radius=corner_radius)
+
+        screen.blit(bubble_surf, (left_x, current_y))
+
+        text_y = current_y + padding_y
+        for surf in line_surfaces:
+            screen.blit(surf, (left_x + padding_x, text_y))
+            text_y += surf.get_height() + 2
 
 def clear_input_without_placeholder(ui_element):
     """Manually clears the text entry without triggering the 
