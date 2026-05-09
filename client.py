@@ -212,6 +212,20 @@ class GameContext:
 
     messages = []
 
+    @classmethod
+    def opponent(cls):
+        return 'x' if cls.character == 'o' else 'o'
+
+    @classmethod
+    def personalize(cls, message):
+        return (message
+            .replace(f"{cls.character} ", "You ")
+            .replace(f" {cls.character}", " You"))
+
+    @classmethod
+    def skip_prefixes(cls):
+        return ("Invalid command", "Note", f"To {cls.opponent().upper()}")
+
 screen.fill((fill_color))
 loading_text = Assets.Fonts.paragraph1.render("Connecting...", True, (50, 50, 50))
 screen.blit(loading_text, loading_text.get_rect(center=(CENTERX, CENTERY)))
@@ -363,7 +377,12 @@ async def main():
                 )
             
             elif event.type == "update_messages":
-                GameContext.messages = [message for message in event.data["messages"] if not message.startswith("Invalid command")]
+                GameContext.messages.clear()
+                GameContext.messages.extend(
+                    GameContext.personalize(message)
+                    for message in event.data["messages"]
+                    if not message.startswith(GameContext.skip_prefixes())
+                )
         
         now = time.perf_counter()
         frame_time = min(now - last_time, 0.25)

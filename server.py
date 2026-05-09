@@ -118,9 +118,15 @@ def draw_messages(screen, font, messages, static_bottom_y, left_x, max_width=200
 
     for message in reversed(messages):
         wrapped_lines = wrap_text(message, font, max_width)
+
+        color = (50, 50, 50) 
+        if message.startswith("Invalid command"):
+            color = (255, 50, 50)
+        elif message.startswith("Note"):
+            color = (10, 10, 90)
         
         for line in reversed(wrapped_lines):
-            text_surface = font.render(line, True, (50, 50, 50))
+            text_surface = font.render(line, True, color)
             msg_height = text_surface.get_height()
             
             current_y -= (msg_height + padding)
@@ -298,6 +304,20 @@ async def main():
                             GameContext.messages.append(
                                 "Invalid command: you must specifically state 'o' or 'x' after '/set-turn' in order of setting their turn."
                             )
+                    elif command.startswith("/note"):
+                        note = command.removeprefix("/set-turn").strip()
+                        GameContext.messages.append(
+                            f"Note: {note}"
+                        )
+                    elif command.startswith("/msg"):
+                        following = command.removeprefix("/msg").strip()
+                        to = following.split(" ")[0].lower()
+                        text = following.removeprefix(to).strip()
+
+                        if to not in ("o", "x") or not text:
+                            GameContext.messages.append("Invalid command; Usage: /msg <o|x> <message>")
+                        else:
+                            GameContext.messages.append(f"To {to}: {text}")
                     elif command == "/reset":
                         GameContext.reset()
 
