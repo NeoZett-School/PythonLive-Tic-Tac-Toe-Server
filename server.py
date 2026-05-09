@@ -305,7 +305,7 @@ async def main():
                                 "Invalid command: you must specifically state 'o' or 'x' after '/set-turn' in order of setting their turn."
                             )
                     elif command.startswith("/note"):
-                        note = command.removeprefix("/set-turn").strip()
+                        note = command.removeprefix("/note").strip()
                         GameContext.messages.append(
                             f"Note: {note}"
                         )
