@@ -311,6 +311,7 @@ async def main():
                     )
                     event.conn.close()
                     event.conn.running = False
+                    server.clients.remove(event.conn)
                     GameContext.messages.append("Client did not have matching versions.")
                     await update_messages()
                     continue
@@ -330,6 +331,7 @@ async def main():
                     )
                     event.conn.close()
                     event.conn.running = False
+                    server.clients.remove(event.conn)
                     GameContext.messages.append("Client could not be given any character.")
                     await update_messages()
                     continue
