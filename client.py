@@ -258,11 +258,10 @@ async def main():
                     
                     if entered_text:
                         message = f"{GameContext.character.upper()}: {entered_text}"
-                        GameContext.messages.append(message)
 
-                        clear_input_without_placeholder(UIElements.text_input)
-                        
-                        await send_message(message)
+                    clear_input_without_placeholder(UIElements.text_input)
+                    
+                    await send_message(message)
 
         for _ in range(MAX_EVENTS_PER_TICK):
             try:
@@ -330,10 +329,8 @@ async def main():
                     (CENTERX, HEIGHT - 50)
                 )
             
-            elif event.type == "new_message":
-                GameContext.messages.append(event.data["message"])
-                if len(GameContext.messages) > max_messages:
-                    GameContext.messages.pop(0)
+            elif event.type == "update_messages":
+                GameContext.messages = event.data["messages"]
         
         now = time.perf_counter()
         frame_time = min(now - last_time, 0.25)

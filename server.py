@@ -188,11 +188,11 @@ async def main():
             turn=GameContext.turn
         )
     
-    async def send_message(message):
+    async def update_messages():
         await server.broadcast(
-            msg_type="new_message",
+            msg_type="update_messages",
             tick=frame_counter,
-            message=message
+            messages=GameContext.messages
         )
 
     running = True
@@ -234,13 +234,15 @@ async def main():
                 if event.ui_element == UIElements.text_input:
                     entered_text = event.text.strip()
                     
-                    if entered_text:
+                    if entered_text.lower() == "/clear":
+                        GameContext.messages = []
+                    elif entered_text:
                         message = f"Server: {entered_text}"
                         GameContext.messages.append(message)
 
-                        clear_input_without_placeholder(UIElements.text_input)
-                        
-                        await send_message(message)
+                    clear_input_without_placeholder(UIElements.text_input)
+                    
+                    await update_messages()
         
         for _ in range(MAX_EVENTS_PER_TICK):
             try:
@@ -293,6 +295,7 @@ async def main():
                 )
                 
                 await update_board()
+                await update_messages()
 
             elif event.type == "disconnect":
                 for char in ("o", "x"):
@@ -382,6 +385,7 @@ async def main():
                 GameContext.messages.append(event.data["message"])
                 if len(GameContext.messages) > max_messages:
                     GameContext.messages.pop(0)
+                await update_messages()
 
         now = time.perf_counter()
         frame_time = min(now - last_time, 0.25)
