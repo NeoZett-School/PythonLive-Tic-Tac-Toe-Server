@@ -110,7 +110,7 @@ def wrap_text(text, font, max_width):
     
     return lines
 
-def draw_messages(screen, font, messages, static_bottom_y, left_x, max_width=250):
+def draw_messages(screen, font, messages, static_bottom_y, left_x, max_width=200):
     current_y = static_bottom_y
     padding = 5
 
