@@ -311,6 +311,7 @@ class GameContext:
         return ("Invalid command", "Note", f"To {opponent}", f"From {opponent} To Server")
 
 screen.fill((fill_color))
+screen.blit(Assets.Images.background, (0, 0))
 loading_text = Assets.Fonts.paragraph1.render("Connecting...", True, (50, 50, 50))
 screen.blit(loading_text, loading_text.get_rect(center=(CENTERX, CENTERY)))
 pygame.display.flip()
