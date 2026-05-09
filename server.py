@@ -311,8 +311,9 @@ async def main():
                         )
                     elif command.startswith("/msg"):
                         following = command.removeprefix("/msg").strip()
-                        to = following.split(" ")[0].upper()
+                        to = following.split(" ")[0]
                         text = following.removeprefix(to).strip()
+                        to = to.upper()
 
                         if to not in ("O", "X") or not text:
                             GameContext.messages.append("Invalid command; Usage: /msg <o|x> <message>")
