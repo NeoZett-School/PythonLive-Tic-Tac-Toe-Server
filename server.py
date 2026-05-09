@@ -228,6 +228,8 @@ async def main():
         )
     
     async def update_messages():
+        while len(GameContext.messages) > max_messages:
+            GameContext.messages.pop(0)
         await server.broadcast(
             msg_type="update_messages",
             tick=frame_counter,
@@ -343,9 +345,6 @@ async def main():
                     elif entered_text:
                         message = f"Server: {entered_text}"
                         GameContext.messages.append(message)
-                    
-                    if len(GameContext.messages) > max_messages:
-                        GameContext.messages.pop(0)
 
                     clear_input_without_placeholder(UIElements.text_input)
                     manager.set_focus_set(set())
@@ -507,8 +506,6 @@ async def main():
             
             elif event.type == "new_message":
                 GameContext.messages.append(event.data["message"])
-                if len(GameContext.messages) > max_messages:
-                    GameContext.messages.pop(0)
                 await update_messages()
 
         now = time.perf_counter()
