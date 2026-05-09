@@ -170,6 +170,8 @@ class GameContext:
     character = None
     turn = "o"
 
+    disallowed = False
+
     winner = None
     win_time = None
     win_ff = False # flip-flop
@@ -249,7 +251,8 @@ async def main():
                 else:
                     GameContext.moving_piece = None
             
-            manager.process_events(event)
+            if not GameContext.disallowed:
+                manager.process_events(event)
 
             # Handle "Enter" key or finished input
             if event.type == pygame_gui.UI_TEXT_ENTRY_FINISHED:
@@ -288,6 +291,7 @@ async def main():
                     event.data["msg"], 
                     (CENTERX, HEIGHT - 50)
                 )
+                GameContext.disallowed = True
             
             elif event.type == "restart":
                 GameContext.board_state = [[None, None, None], [None, None, None], [None, None, None]]
@@ -342,7 +346,8 @@ async def main():
         while accumulator >= delta_time:
 
             # Update your game state using delta_time
-            manager.update(delta_time)
+            if not GameContext.disallowed:
+                manager.update(delta_time)
 
             accumulator -= delta_time
 
@@ -354,8 +359,9 @@ async def main():
         screen.blit(Surfaces.title, Surfaces.title_rect)
         screen.blit(Surfaces.subtitle, Surfaces.subtitle_rect)
 
-        manager.draw_ui(screen)
-        draw_messages(screen, Assets.Fonts.paragraph2, GameContext.messages, HEIGHT - 45, 10)
+        if not GameContext.disallowed:
+            manager.draw_ui(screen)
+            draw_messages(screen, Assets.Fonts.paragraph2, GameContext.messages, HEIGHT - 45, 10)
 
         if GameContext.winner is None or now - GameContext.win_time < win_delay:
             screen.blit(Assets.Images.board, board_rect)
