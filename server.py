@@ -142,6 +142,10 @@ def draw_messages(screen, font, messages, static_bottom_y, left_x, max_width=200
             color = (255, 50, 50)
         elif message.startswith("Note"):
             color = (100, 75, 150)
+        elif message.startswith("To"):
+            color = (100, 75, 150)
+        elif message.startswith("From"):
+            color = (50, 255, 50)
         
         for line in reversed(wrapped_lines):
             text_surface = font.render(line, True, color)

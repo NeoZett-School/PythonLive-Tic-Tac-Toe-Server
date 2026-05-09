@@ -159,9 +159,15 @@ def draw_messages(screen, font, messages, static_bottom_y, left_x, max_width=200
 
     for message in reversed(messages):
         wrapped_lines = wrap_text(message, font, max_width)
+
+        color = (50, 50, 50)
+        if message.startswith("From"):
+            color = (100, 75, 150)
+        elif message.startswith("To"):
+            color = (50, 255, 50)
         
         for line in reversed(wrapped_lines):
-            text_surface = font.render(line, True, (50, 50, 50))
+            text_surface = font.render(line, True, color)
             msg_height = text_surface.get_height()
             
             current_y -= (msg_height + padding)
