@@ -122,8 +122,8 @@ def round_corners(surface, radius):
 
 class Assets:
     class Fonts:
-        header1 = pygame.font.SysFont("Georgia", 24)
-        paragraph1 = pygame.font.SysFont("Georgia", 18)
+        header1 = pygame.font.Font("assets/fonts/Georama-Bold.ttf", 24)
+        paragraph1 = pygame.font.Font("assets/fonts/Montserrat-Regular.ttf", 18)
         paragraph2 = pygame.font.Font("assets/fonts/FiraCode-Regular.ttf", 14)
     class Images:
         background = pygame.transform.scale(pygame.image.load("assets/images/background.png"), (WIDTH, HEIGHT))
