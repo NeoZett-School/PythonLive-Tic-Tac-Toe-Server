@@ -74,6 +74,7 @@ max_pieces = app_config["max_pieces"]
 pieces_limited = app_config["pieces_limited"]
 max_messages = app_config["max_messages"]
 win_delay = app_config["win_delay"]
+move_duration = app_config["move_duration"]
 piece_size = board_size // 3
 half_piece_size = piece_size // 2
 
@@ -288,6 +289,9 @@ class GameContext:
         "x": 0
     }
 
+    last_placed_piece = None
+    last_placed_time = None
+
     messages = [
         "Server has started listening."
     ]
@@ -320,6 +324,7 @@ async def main():
             tick=frame_counter, 
             board_state=GameContext.board_state, 
             piece_counts=GameContext.piece_counts,
+            last_placed_piece=GameContext.last_placed_piece,
             turn=GameContext.turn
         )
     
@@ -569,6 +574,9 @@ async def main():
                 GameContext.piece_counts[GameContext.turn] += 1
                 GameContext.moving_piece = None
 
+                GameContext.last_placed_piece = (row, col)
+                GameContext.last_placed_time = time.perf_counter()
+
                 winner_found = None
 
                 for win in possible_wins:
@@ -642,13 +650,71 @@ async def main():
             screen.blit(Assets.Images.board, board_rect)
             for x, row in enumerate(GameContext.board_state):
                 for y, col in enumerate(row):
-                    if col is None: continue
-                    surface = Assets.Images.o_piece if col == "o" else Assets.Images.x_piece
+                    if col is None:
+                        continue
+
                     center = (
-                        first_slot_x + piece_size * x, 
+                        first_slot_x + piece_size * x,
                         first_slot_y + piece_size * y
                     )
-                    screen.blit(surface, surface.get_rect(center=center))
+
+                    base_surface = (
+                        Assets.Images.o_piece
+                        if col == "o"
+                        else Assets.Images.x_piece
+                    )
+
+                    if GameContext.last_placed_piece == (x, y):
+                        elapsed = now - GameContext.last_placed_time
+                        t = min(elapsed / move_duration, 1.0)
+
+                        t = 1 - pow(1 - t, 3)
+
+                        scale = pygame.math.lerp(1.22, 1.0, t)
+
+                        alpha = pygame.math.lerp(120, 255, t)
+
+                        scaled_size = int(piece_image_size * scale)
+
+                        surface = pygame.transform.smoothscale(
+                            base_surface,
+                            (scaled_size, scaled_size)
+                        ).convert_alpha()
+
+                        surface.set_alpha(int(alpha))
+
+                        rect = surface.get_rect(center=center)
+
+                        glow_size = scaled_size + int((1 - t) * 20)
+
+                        glow_surface = pygame.Surface(
+                            (glow_size, glow_size),
+                            pygame.SRCALPHA
+                        )
+
+                        glow_color = (
+                            (120, 170, 255, 45)
+                            if col == "o"
+                            else (255, 140, 140, 45)
+                        )
+
+                        pygame.draw.circle(
+                            glow_surface,
+                            glow_color,
+                            (glow_size // 2, glow_size // 2),
+                            glow_size // 2
+                        )
+
+                        glow_rect = glow_surface.get_rect(center=center)
+
+                        screen.blit(glow_surface, glow_rect)
+                        screen.blit(surface, rect)
+
+                    else:
+                        screen.blit(
+                            base_surface,
+                            base_surface.get_rect(center=center)
+                        )
 
             if pieces_limited and GameContext.moving_piece:
                 m_row, m_col = GameContext.moving_piece

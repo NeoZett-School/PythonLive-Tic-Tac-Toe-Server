@@ -13,5 +13,6 @@
     "pieces_limited": true,
     "max_messages": 7,
     "win_delay": 5.0,
+    "move_duration": 0.15,
     "version": "1.0"
 }
