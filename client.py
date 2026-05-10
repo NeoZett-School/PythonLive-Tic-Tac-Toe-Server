@@ -93,12 +93,13 @@ version = app_config["version"]
 
 fill_color = app_config["fill_color"]
 board_size = app_config["board_size"]
+piece_fit = app_config["piece_fit"]
+row_count = app_config["row_count"]
 max_pieces = app_config["max_pieces"]
 pieces_limited = app_config["pieces_limited"]
 max_messages = app_config["max_messages"]
 win_delay = app_config["win_delay"]
 move_duration = app_config["move_duration"]
-piece_fit = app_config["piece_fit"]
 piece_size = board_size // piece_fit
 half_piece_size = piece_size // 2
 
@@ -146,30 +147,30 @@ first_slot_y = board_rect.top + half_piece_size
 possible_wins = [
     # Horizontal wins (→)
     *[
-        [(x, y), (x + 1, y), (x + 2, y)]
+        [(x + i, y) for i in range(row_count)]
         for y in range(piece_fit)
-        for x in range(piece_fit - 2)
+        for x in range(piece_fit - row_count + 1)
     ],
 
     # Vertical wins (↓)
     *[
-        [(x, y), (x, y + 1), (x, y + 2)]
+        [(x, y + i) for i in range(row_count)]
         for x in range(piece_fit)
-        for y in range(piece_fit - 2)
+        for y in range(piece_fit - row_count + 1)
     ],
 
     # Diagonal wins (\)
     *[
-        [(x, y), (x + 1, y + 1), (x + 2, y + 2)]
-        for y in range(piece_fit - 2)
-        for x in range(piece_fit - 2)
+        [(x + i, y + i) for i in range(row_count)]
+        for y in range(piece_fit - row_count + 1)
+        for x in range(piece_fit - row_count + 1)
     ],
 
     # Diagonal wins (/)
     *[
-        [(x + 2, y), (x + 1, y + 1), (x, y + 2)]
-        for y in range(piece_fit - 2)
-        for x in range(piece_fit - 2)
+        [(x + (row_count - 1) - i, y + i) for i in range(row_count)]
+        for y in range(piece_fit - row_count + 1)
+        for x in range(piece_fit - row_count + 1)
     ],
 ]
 
