@@ -102,6 +102,24 @@ half_piece_size = piece_size // 2
 
 piece_image_size = piece_size - 40
 
+def round_corners(surface, radius):
+    width, height = surface.get_size()
+
+    mask = pygame.Surface((width, height), pygame.SRCALPHA)
+
+    pygame.draw.rect(
+        mask,
+        (255, 255, 255, 255),
+        (0, 0, width, height),
+        border_radius=radius
+    )
+
+    rounded = pygame.Surface((width, height), pygame.SRCALPHA)
+    rounded.blit(surface, (0, 0))
+    rounded.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+
+    return rounded
+
 class Assets:
     class Fonts:
         header1 = pygame.font.SysFont("Georgia", 24)
@@ -109,7 +127,8 @@ class Assets:
         paragraph2 = pygame.font.Font("assets/fonts/FiraCode-Regular.ttf", 14)
     class Images:
         background = pygame.transform.scale(pygame.image.load("assets/images/background.png"), (WIDTH, HEIGHT))
-        board = pygame.transform.scale(pygame.image.load("assets/images/board.png"), (board_size, board_size))
+        _board = pygame.transform.scale(pygame.image.load("assets/images/board.png"), (board_size, board_size))
+        board = round_corners(_board, 30)
         o_piece = pygame.transform.smoothscale(pygame.image.load("assets/images/o.png"), (piece_image_size, piece_image_size))
         x_piece = pygame.transform.smoothscale(pygame.image.load("assets/images/x.png"), (piece_image_size, piece_image_size))
     class Sounds:
