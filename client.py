@@ -132,6 +132,7 @@ class Assets:
         o_piece = pygame.transform.smoothscale(pygame.image.load("assets/images/o.png"), (piece_image_size, piece_image_size))
         x_piece = pygame.transform.smoothscale(pygame.image.load("assets/images/x.png"), (piece_image_size, piece_image_size))
     class Sounds:
+        restart = pygame.mixer.Sound("assets/sounds/restart.mp3")
         placing = pygame.mixer.Sound("assets/sounds/placing.mp3")
         win = pygame.mixer.Sound("assets/sounds/win.mp3")
 
@@ -464,6 +465,8 @@ async def main():
                     "Restarting...", 
                     (CENTERX, HEIGHT - 50)
                 )
+                if sounds_active:
+                    Assets.Sounds.restart.play()
             
             elif event.type == "update":
                 GameContext.board_state = event.data["board_state"]

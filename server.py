@@ -109,6 +109,9 @@ class Assets:
         o_piece = pygame.transform.smoothscale(pygame.image.load("assets/images/o.png"), (piece_image_size, piece_image_size))
         x_piece = pygame.transform.smoothscale(pygame.image.load("assets/images/x.png"), (piece_image_size, piece_image_size))
     class Sounds:
+        connection = pygame.mixer.Sound("assets/sounds/connection.mp3")
+        disconnection = pygame.mixer.Sound("assets/sounds/disconnection.mp3")
+        restart = pygame.mixer.Sound("assets/sounds/restart.mp3")
         placing = pygame.mixer.Sound("assets/sounds/placing.mp3")
         win = pygame.mixer.Sound("assets/sounds/win.mp3")
 
@@ -360,6 +363,7 @@ async def main():
                     )
 
                     await update_board()
+                    Assets.Sounds.restart.play()
             
             elif event.type == MUSIC_END:
                 play_next_track()
@@ -435,6 +439,7 @@ async def main():
                         )
 
                         await update_board()
+                        Assets.Sounds.restart.play()
                         GameContext.messages.append(
                             "Server has reset the board."
                         )
@@ -510,6 +515,7 @@ async def main():
             elif event.type == "connect":
                 GameContext.messages.append("A new client has connected.")
                 await update_messages()
+                Assets.Sounds.connection.play()
 
             elif event.type == "disconnect":
                 GameContext.messages.append(f"A client disconnected.")
@@ -528,8 +534,10 @@ async def main():
                         (CENTERX, HEIGHT - 50)
                     )
                     GameContext.reset()
+                    Assets.Sounds.restart.play()
                 
                 server.clients.remove(event.conn)
+                Assets.Sounds.disconnection.play()
             
             # Handle network events
             elif event.type == "click":
