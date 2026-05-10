@@ -13,7 +13,7 @@
     "row_count": 3,
     "max_pieces": 4,
     "pieces_limited": true,
-    "adjacent_only": false,
+    "adjacent_only": true,
     "max_messages": 7,
     "win_delay": 5.0,
     "move_duration": 0.15,
