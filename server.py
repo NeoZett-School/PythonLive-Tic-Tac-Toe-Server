@@ -297,6 +297,8 @@ class Surfaces:
     )
 
 class GameContext:
+    disallowed = []
+
     players = {
         "o": None,
         "x": None
@@ -419,6 +421,7 @@ async def main():
                             )
                             client.close()
                             client.running = False
+                            GameContext.disallowed.append(client)
                         GameContext.messages.append(
                             "All clients have been kicked from the session."
                         )
@@ -500,6 +503,7 @@ async def main():
                     )
                     event.conn.close()
                     event.conn.running = False
+                    GameContext.disallowed.append(event.conn)
                     GameContext.messages.append("Client did not have matching versions.")
                     await update_messages()
                     continue
@@ -519,6 +523,7 @@ async def main():
                     )
                     event.conn.close()
                     event.conn.running = False
+                    GameContext.disallowed.append(event.conn)
                     GameContext.messages.append("Client could not be given any character.")
                     await update_messages()
                     continue
@@ -572,6 +577,9 @@ async def main():
             # Handle network events
             elif event.type == "click":
                 if GameContext.winner is not None:
+                    continue
+
+                if event.conn in GameContext.disallowed:
                     continue
 
                 if not event.conn == GameContext.players[GameContext.turn]:
