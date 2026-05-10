@@ -8,6 +8,8 @@ import json
 import time
 import math
 
+import random
+
 import win32event
 import win32api
 import winerror
@@ -75,7 +77,7 @@ MUSIC_TRACKS = [
     "assets/sounds/music/track2.mp3",
     "assets/sounds/music/track3.mp3",
 ]
-music_index = 0
+music_index = random.randint(0, len(MUSIC_TRACKS) - 1)
 
 MUSIC_END = pygame.USEREVENT + 1
 pygame.mixer.music.set_endevent(MUSIC_END)
