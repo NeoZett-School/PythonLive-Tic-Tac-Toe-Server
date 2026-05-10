@@ -689,11 +689,12 @@ async def main():
 
                                 screen.blit(glow_surface, glow_rect.topleft)
 
+                                border_width = 3 + int(pulse * 2)
                                 pygame.draw.rect(
                                     screen,
                                     color,
                                     rect,
-                                    width=4,
+                                    width=border_width,
                                     border_radius=14
                                 )
 
