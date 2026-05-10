@@ -301,7 +301,7 @@ class GameContext:
         "x": None
     }
     turn = "o"
-    board_state = [[None, None, None], [None, None, None], [None, None, None]]
+    board_state = [[None for _ in range(piece_fit)] for _ in range(piece_fit)]
 
     winner = None
     win_time = None
@@ -322,7 +322,7 @@ class GameContext:
 
     @classmethod
     def reset(cls):
-        cls.board_state = [[None, None, None], [None, None, None], [None, None, None]]
+        cls.board_state = [[None for _ in range(piece_fit)] for _ in range(piece_fit)]
         cls.piece_counts = {"o": 0, "x": 0}
         cls.turn = "o"
         cls.winner = None

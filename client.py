@@ -317,7 +317,7 @@ class Surfaces:
     )
 
 class GameContext:
-    board_state = [[None, None, None], [None, None, None], [None, None, None]]
+    board_state = [[None for _ in range(piece_fit)] for _ in range(piece_fit)]
     character = None
     turn = "o"
 
@@ -411,8 +411,8 @@ async def main():
                     
                     row, col = (rel_x // piece_size, rel_y // piece_size)
 
-                    row = max(0, min(2, row))
-                    col = max(0, min(2, col))
+                    row = max(0, min(piece_fit - 1, row))
+                    col = max(0, min(piece_fit - 1, col))
 
                     if GameContext.character is None:
                         GameContext.moving_piece = row, col
@@ -483,7 +483,7 @@ async def main():
                 GameContext.disallowed = True
             
             elif event.type == "restart":
-                GameContext.board_state = [[None, None, None], [None, None, None], [None, None, None]]
+                GameContext.board_state = [[None for _ in range(piece_fit)] for _ in range(piece_fit)]
                 GameContext.winner = None
                 GameContext.win_ff = False
                 GameContext.moving_piece = None

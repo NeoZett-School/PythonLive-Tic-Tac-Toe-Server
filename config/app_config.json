@@ -9,7 +9,7 @@
     },
     "fill_color": [255, 255, 255],
     "board_size": 400,
-    "piece_fit": 3,
+    "piece_fit": 4,
     "max_pieces": 3,
     "pieces_limited": true,
     "max_messages": 7,
