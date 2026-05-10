@@ -658,26 +658,55 @@ async def main():
                         values = [GameContext.board_state[r][c] for r, c in win]
                         if all(v == GameContext.winner for v in values):
                             color = (100, 255, 100) if GameContext.winner == "o" else (255, 100, 100)
-                            pulse = (math.sin(now * 15) + 1) / 2 
-                            
+                            pulse = (math.sin(now * 6) + 1) * 0.5
+                            progress = min(time_passed / win_delay, 1.0)
+                            shrink = pygame.math.lerp(0, piece_size * 0.9, progress)
+
                             for r, c in win:
                                 pos_x = first_slot_x + piece_size * r
                                 pos_y = first_slot_y + piece_size * c
-                                
-                                frame_size = piece_size * 0.8 + (pulse * 10)
-                                rect = pygame.Rect(0, 0, frame_size, frame_size)
+
+                                base_size = piece_size * 0.82
+                                animated_size = base_size + (pulse * 8)
+                                final_size = max(8, animated_size - shrink)
+
+                                rect = pygame.Rect(0, 0, final_size, final_size)
                                 rect.center = (pos_x, pos_y)
-                                
-                                remaining_ratio = 1.0 - (time_passed / win_delay)
-                                shrink_amount = -int((1.0 - remaining_ratio) * piece_size)
-                                draw_rect = rect.inflate(shrink_amount, shrink_amount)
-                                
-                                if draw_rect.width > 5:
-                                    pygame.draw.rect(screen, color, draw_rect, 3, border_radius=12)
-                                    
-                                    inner_rect = draw_rect.inflate(-10, -10)
-                                    if inner_rect.width > 0:
-                                        pygame.draw.rect(screen, (255, 255, 255), inner_rect, 1, border_radius=8)
+
+                                glow_rect = rect.inflate(18, 18)
+
+                                glow_surface = pygame.Surface(
+                                    (glow_rect.width, glow_rect.height),
+                                    pygame.SRCALPHA
+                                )
+
+                                pygame.draw.rect(
+                                    glow_surface,
+                                    (*color, 40),
+                                    glow_surface.get_rect(),
+                                    border_radius=18
+                                )
+
+                                screen.blit(glow_surface, glow_rect.topleft)
+
+                                pygame.draw.rect(
+                                    screen,
+                                    color,
+                                    rect,
+                                    width=4,
+                                    border_radius=14
+                                )
+
+                                inner_rect = rect.inflate(-12, -12)
+
+                                if inner_rect.width > 0:
+                                    pygame.draw.rect(
+                                        screen,
+                                        (255, 255, 255),
+                                        inner_rect,
+                                        width=2,
+                                        border_radius=10
+                                    )
                             
                             break
         else:
