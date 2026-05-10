@@ -74,6 +74,7 @@ piece_fit = app_config["piece_fit"]
 row_count = app_config["row_count"]
 max_pieces = app_config["max_pieces"]
 pieces_limited = app_config["pieces_limited"]
+adjacent_only = app_config["adjacent_only"]
 max_messages = app_config["max_messages"]
 win_delay = app_config["win_delay"]
 move_duration = app_config["move_duration"]
@@ -600,6 +601,12 @@ async def main():
                         continue
 
                     old_row, old_col = GameContext.moving_piece
+                    dist_row = abs(row - old_row)
+                    dist_col = abs(col - old_col)
+
+                    if adjacent_only and (dist_row > 1 or dist_col > 1):
+                        continue
+
                     GameContext.board_state[old_row][old_col] = None
                     GameContext.piece_counts[GameContext.turn] -= 1
 
