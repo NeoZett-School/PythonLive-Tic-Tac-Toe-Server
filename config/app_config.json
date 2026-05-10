@@ -11,7 +11,7 @@
     "board_size": 400,
     "piece_fit": 4,
     "row_count": 4,
-    "max_pieces": 8,
+    "max_pieces": 6,
     "pieces_limited": true,
     "max_messages": 7,
     "win_delay": 5.0,
