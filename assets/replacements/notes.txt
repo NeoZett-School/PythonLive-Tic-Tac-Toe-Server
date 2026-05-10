@@ -1,0 +1,4 @@
+In order to change the game size, you must simply replace the 'board.png' image in 
+the 'images' folder. When this is done, you must configure the application right 
+by setting 'piece_fit' to three or four in the 'app_config.json' file in 
+the 'config' folder.
