@@ -11,7 +11,7 @@
     "board_size": 400,
     "piece_fit": 4,
     "row_count": 4,
-    "max_pieces": 4,
+    "max_pieces": 5,
     "pieces_limited": true,
     "adjacent_only": true,
     "max_messages": 7,
